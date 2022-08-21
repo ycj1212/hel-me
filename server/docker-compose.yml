@@ -1,0 +1,43 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres:14-alpine3.16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=helme
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgvolume:/var/lib/postgresql/data
+      # - /data/app/postgresSQL/conf/postgres.conf:/etc/postgresql/postgres.conf
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - 13050:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+  web:
+    container_name: django-web
+    image: helme/python-3.9
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/opt/project
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=helme
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+volumes:
+  pgvolume:
+  pgadmin:
